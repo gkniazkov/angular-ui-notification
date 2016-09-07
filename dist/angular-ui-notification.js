@@ -56,7 +56,7 @@ angular.module('ui-notification').provider('Notification', function() {
             args.type = t || options.type ||  '';
             args.positionY = args.positionY ? args.positionY : options.positionY;
             args.positionX = args.positionX ? args.positionX : options.positionX;
-            args.replaceMessage = args.replaceMessage ? args.replaceMessage : options.replaceMessage;
+            args.replaceMessage = args.replaceMessage !== undefined ? args.replaceMessage : options.replaceMessage;
             args.onClose = args.onClose ? args.onClose : options.onClose;
             args.closeOnClick = (args.closeOnClick !== null && args.closeOnClick !== undefined) ? args.closeOnClick : options.closeOnClick;
 
