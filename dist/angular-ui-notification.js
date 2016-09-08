@@ -1,7 +1,7 @@
 /**
  * angular-ui-notification - Angular.js service providing simple notifications using Bootstrap 3 styles with css transitions for animating
  * @author Alex_Crack
- * @version v0.2.1
+ * @version v0.2.4
  * @link https://github.com/alexcrack/angular-ui-notification
  * @license MIT
  */
@@ -10,6 +10,8 @@ angular.module('ui-notification',[]);
 angular.module('ui-notification').provider('Notification', function() {
 
     var $timeoutPromises = [];
+
+    var pendingMessages = [];
 
     this.options = {
         delay: 5000,
@@ -69,7 +71,11 @@ angular.module('ui-notification').provider('Notification', function() {
                 scope.delay = args.delay;
                 scope.onClose = args.onClose;
 
+                pendingMessages.push(args.message);
+
                 var reposite = function() {
+
+                    var pendingMessagesCounter = {};
                     var j = 0;
                     var k = 0;
                     var lastTop = startTop;
@@ -77,7 +83,21 @@ angular.module('ui-notification').provider('Notification', function() {
                     var lastPosition = [];
                     for(var i = messageElements.length - 1; i >= 0; i --) {
                         var element  = messageElements[i];
-                        if (args.replaceMessage && i < messageElements.length - 1) {
+
+                        var shouldBeReplaced = args.replaceMessage && i < messageElements.length - 1;
+
+                        for(var mIndex in pendingMessages) {
+                            var message = pendingMessages[mIndex];
+                            pendingMessagesCounter[message] = pendingMessagesCounter[message] || 0;
+                            if(message.search(element.children().eq(1).text()) !== -1) {
+                                if(pendingMessagesCounter[message]) {
+                                    shouldBeReplaced = true;
+                                }
+                                ++pendingMessagesCounter[message];
+                            }
+                        }
+
+                        if (shouldBeReplaced || element.hasClass('killed')) {
                             element.addClass('killed');
                             continue;
                         }
@@ -109,6 +129,8 @@ angular.module('ui-notification').provider('Notification', function() {
 
                         j ++;
                     }
+
+                    pendingMessages.splice(pendingMessages.indexOf(args.message), 1);
                 };
 
                 var templateElement = $compile(template)(scope);
@@ -149,12 +171,6 @@ angular.module('ui-notification').provider('Notification', function() {
                 }
 
                 setCssTransitions('none');
-
-                messageElements.forEach(function(el) {
-                    if ( (args.message.search(el.children().eq(1).text())) !== -1 ) {
-                        el.scope().kill(true);
-                    }
-                });
 
                 angular.element(document.getElementsByTagName('body')).append(templateElement);
                 var offset = -(parseInt(templateElement[0].offsetHeight) + 50);
