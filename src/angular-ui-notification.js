@@ -143,6 +143,12 @@ angular.module('ui-notification').provider('Notification', function() {
 
                 setCssTransitions('none');
 
+                messageElements.forEach(function(el) {
+                    if ( (args.message.search(el.children().eq(1).text())) !== -1 ) {
+                        el.scope().kill(true);
+                    }
+                });
+
                 angular.element(document.getElementsByTagName('body')).append(templateElement);
                 var offset = -(parseInt(templateElement[0].offsetHeight) + 50);
                 templateElement.css(templateElement._positionY, offset + "px");
